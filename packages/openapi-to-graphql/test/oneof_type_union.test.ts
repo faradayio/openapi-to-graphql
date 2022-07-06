@@ -24,6 +24,7 @@ let createdSchema
 beforeAll(() => {
   return Promise.all([
     openAPIToGraphQL.createGraphQLSchema(oas).then(({ schema, report }) => {
+      console.log(report)
       createdSchema = schema
     }),
     startServer(PORT)
