@@ -83,25 +83,6 @@
           }
         }
       },
-      "ShapeOptionsMergePatch": {
-        "type": "object",
-        "description": "Options for a shape.",
-        "oneOf": [
-          {
-            "$ref": "#/components/schemas/SquareShapeOptionsMergePatch"
-          },
-          {
-            "$ref": "#/components/schemas/RoundShapeOptionsMergePatch"
-          }
-        ],
-        "discriminator": {
-          "propertyName": "type",
-          "mapping": {
-            "square": "#/components/schemas/SquareShapeOptionsMergePatch",
-            "round": "#/components/schemas/RoundShapeOptionsMergePatch"
-          }
-        }
-      },
       "ShapeOptionsPost": {
         "type": "object",
         "description": "Options for a shape.",
@@ -121,25 +102,6 @@
           }
         }
       },
-      "ShapeOptionsPut": {
-        "type": "object",
-        "description": "Options for a shape.",
-        "oneOf": [
-          {
-            "$ref": "#/components/schemas/SquareShapeOptionsPut"
-          },
-          {
-            "$ref": "#/components/schemas/RoundShapeOptionsPut"
-          }
-        ],
-        "discriminator": {
-          "propertyName": "type",
-          "mapping": {
-            "square": "#/components/schemas/SquareShapeOptionsPut",
-            "round": "#/components/schemas/RoundShapeOptionsPut"
-          }
-        }
-      },
       "RoundShapeOptions": {
         "type": "object",
         "required": ["radius", "type"],
@@ -153,33 +115,7 @@
         },
         "additionalProperties": false
       },
-      "RoundShapeOptionsMergePatch": {
-        "type": "object",
-        "required": ["type"],
-        "properties": {
-          "radius": {
-            "type": "number"
-          },
-          "type": {
-            "type": "string"
-          }
-        },
-        "additionalProperties": false
-      },
       "RoundShapeOptionsPost": {
-        "type": "object",
-        "required": ["radius", "type"],
-        "properties": {
-          "radius": {
-            "type": "number"
-          },
-          "type": {
-            "type": "string"
-          }
-        },
-        "additionalProperties": false
-      },
-      "RoundShapeOptionsPut": {
         "type": "object",
         "required": ["radius", "type"],
         "properties": {
@@ -208,39 +144,7 @@
         },
         "additionalProperties": false
       },
-      "SquareShapeOptionsMergePatch": {
-        "type": "object",
-        "required": ["type"],
-        "properties": {
-          "height": {
-            "type": "number"
-          },
-          "type": {
-            "type": "string"
-          },
-          "width": {
-            "type": "number"
-          }
-        },
-        "additionalProperties": false
-      },
       "SquareShapeOptionsPost": {
-        "type": "object",
-        "required": ["height", "type", "width"],
-        "properties": {
-          "height": {
-            "type": "number"
-          },
-          "type": {
-            "type": "string"
-          },
-          "width": {
-            "type": "number"
-          }
-        },
-        "additionalProperties": false
-      },
-      "SquareShapeOptionsPut": {
         "type": "object",
         "required": ["height", "type", "width"],
         "properties": {
