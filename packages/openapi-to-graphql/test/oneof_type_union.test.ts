@@ -19,23 +19,13 @@ oas.servers[0].variables.port.default = String(PORT)
 let createdSchema
 
 /**
- * This test suite is used to verify the behavior of the operationIdFieldNames
- * option.
- *
- * It is necessary to make a separate OAS because we need all of operations to
- * have operationIDs.
- */
-
-/**
  * Set up the schema first and run example API server
  */
 beforeAll(() => {
   return Promise.all([
-    openAPIToGraphQL
-      .createGraphQLSchema(oas, { operationIdFieldNames: true })
-      .then(({ schema, report }) => {
-        createdSchema = schema
-      }),
+    openAPIToGraphQL.createGraphQLSchema(oas).then(({ schema, report }) => {
+      createdSchema = schema
+    }),
     startServer(PORT)
   ])
 })
@@ -49,7 +39,7 @@ afterAll(() => {
 
 test('Querying a type union', () => {
   const query = `query {
-    getShapes {
+    shapes {
       __typename
       ... on SquareShapeOptions {
         height
@@ -63,7 +53,7 @@ test('Querying a type union', () => {
   return graphql(createdSchema, query).then((result) => {
     expect(result).toEqual({
       data: {
-        getShapes: [
+        shapes: [
           {
             __typename: 'SquareShapeOptions',
             height: 10,
