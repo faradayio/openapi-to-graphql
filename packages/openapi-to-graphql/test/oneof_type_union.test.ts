@@ -48,6 +48,10 @@ test('Querying a type union', () => {
       ... on RoundShapeOptions {
         radius
       }
+      ... on RectangleShapeOptions {
+        height
+        width
+      }
     }
   }`
   return graphql(createdSchema, query).then((result) => {
@@ -62,6 +66,11 @@ test('Querying a type union', () => {
           {
             __typename: 'RoundShapeOptions',
             radius: 30
+          },
+          {
+            __typename: 'RectangleShapeOptions',
+            height: 30,
+            width: 40
           }
         ]
       }

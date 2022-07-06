@@ -73,6 +73,9 @@
           },
           {
             "$ref": "#/components/schemas/RoundShapeOptions"
+          },
+          {
+            "$ref": "#/components/schemas/RectangleShapeOptions"
           }
         ],
         "discriminator": {
@@ -129,6 +132,22 @@
         "additionalProperties": false
       },
       "SquareShapeOptions": {
+        "type": "object",
+        "required": ["height", "type", "width"],
+        "properties": {
+          "height": {
+            "type": "number"
+          },
+          "type": {
+            "type": "string"
+          },
+          "width": {
+            "type": "number"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RectangleShapeOptions": {
         "type": "object",
         "required": ["height", "type", "width"],
         "properties": {
