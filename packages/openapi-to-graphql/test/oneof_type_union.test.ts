@@ -8,7 +8,7 @@
 import { graphql } from 'graphql'
 import { afterAll, beforeAll, expect, test } from '@jest/globals'
 
-import * as openAPIToGraphQL from '../lib/index'
+import * as openAPIToGraphQL from '../src/index'
 import { startServer, stopServer } from './oneof_type_union_server'
 
 const oas = require('./fixtures/oneof_type_union.json')
