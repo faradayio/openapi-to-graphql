@@ -82,7 +82,8 @@
           "propertyName": "type",
           "mapping": {
             "square": "#/components/schemas/SquareShapeOptions",
-            "round": "#/components/schemas/RoundShapeOptions"
+            "round": "#/components/schemas/RoundShapeOptions",
+            "rectangle": "#/components/schemas/RectangleShapeOptions"
           }
         }
       },
@@ -101,7 +102,8 @@
           "propertyName": "type",
           "mapping": {
             "square": "#/components/schemas/SquareShapeOptionsPost",
-            "round": "#/components/schemas/RoundShapeOptionsPost"
+            "round": "#/components/schemas/RoundShapeOptionsPost",
+            "rectangle": "#/components/schemas/RectangleShapeOptionsPost"
           }
         }
       },
@@ -148,6 +150,22 @@
         "additionalProperties": false
       },
       "RectangleShapeOptions": {
+        "type": "object",
+        "required": ["height", "type", "width"],
+        "properties": {
+          "height": {
+            "type": "number"
+          },
+          "type": {
+            "type": "string"
+          },
+          "width": {
+            "type": "number"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RectangleShapeOptionsPost": {
         "type": "object",
         "required": ["height", "type", "width"],
         "properties": {
