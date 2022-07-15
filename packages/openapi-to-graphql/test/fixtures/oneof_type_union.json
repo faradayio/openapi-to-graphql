@@ -19,7 +19,7 @@
         "operationId": "getShapes",
         "description": "Return some shape options.",
         "responses": {
-          "202": {
+          "200": {
             "description": "We have shape options!",
             "content": {
               "application/json": {
@@ -75,7 +75,7 @@
             "$ref": "#/components/schemas/RoundShapeOptions"
           },
           {
-            "$ref": "#/components/schemas/RectangleShapeOptions"
+            "$ref": "#/components/schemas/DotShapeOptions"
           }
         ],
         "discriminator": {
@@ -83,7 +83,7 @@
           "mapping": {
             "square": "#/components/schemas/SquareShapeOptions",
             "round": "#/components/schemas/RoundShapeOptions",
-            "rectangle": "#/components/schemas/RectangleShapeOptions"
+            "dot": "#/components/schemas/DotShapeOptions"
           }
         }
       },
@@ -96,6 +96,9 @@
           },
           {
             "$ref": "#/components/schemas/RoundShapeOptionsPost"
+          },
+          {
+            "$ref": "#/components/schemas/DotShapeOptionsPost"
           }
         ],
         "discriminator": {
@@ -103,7 +106,7 @@
           "mapping": {
             "square": "#/components/schemas/SquareShapeOptionsPost",
             "round": "#/components/schemas/RoundShapeOptionsPost",
-            "rectangle": "#/components/schemas/RectangleShapeOptionsPost"
+            "dot": "#/components/schemas/DotShapeOptionsPost"
           }
         }
       },
@@ -149,33 +152,20 @@
         },
         "additionalProperties": false
       },
-      "RectangleShapeOptions": {
+      "DotShapeOptions": {
         "type": "object",
-        "required": ["height", "type", "width"],
+        "required": ["type", "radius"],
         "properties": {
-          "height": {
-            "type": "number"
-          },
           "type": {
             "type": "string"
           },
-          "width": {
-            "type": "number"
-          }
-        },
-        "additionalProperties": false
-      },
-      "RectangleShapeOptionsPost": {
-        "type": "object",
-        "required": ["height", "type", "width"],
-        "properties": {
-          "height": {
+          "radius": {
             "type": "number"
           },
-          "type": {
-            "type": "string"
+          "x": {
+            "type": "number"
           },
-          "width": {
+          "y": {
             "type": "number"
           }
         },
@@ -192,6 +182,19 @@
             "type": "string"
           },
           "width": {
+            "type": "number"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DotShapeOptionsPost": {
+        "type": "object",
+        "required": ["type", "radius"],
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "radius": {
             "type": "number"
           }
         },

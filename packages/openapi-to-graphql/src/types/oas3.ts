@@ -17,6 +17,7 @@ export type SchemaObject = {
   type?: 'string' | 'number' | 'integer' | 'boolean' | 'object' | 'array'
   format?: string
   nullable?: boolean
+  discriminator?: DiscriminatorObject
   description?: string
   properties?: {
     [key: string]: SchemaObject | ReferenceObject
@@ -61,6 +62,13 @@ type EncodingObject = {
   style?: string
   explode?: boolean
   allowReserved?: boolean
+}
+
+type DiscriminatorObject = {
+  propertyName: string
+  mapping: {
+    [key: string]: string
+  }
 }
 
 export type MediaTypeObject = {

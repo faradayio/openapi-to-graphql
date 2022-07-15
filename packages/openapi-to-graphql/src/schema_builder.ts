@@ -408,6 +408,26 @@ function createOrReuseUnion<TSource, TContext, TArgs>({
       description,
       types,
       resolveType: (source, context, info) => {
+
+        if (def.schema.discriminator) {
+          // Get the discriminator property name and then use that property to inspect
+          // the properties on the field that we have, matching the value to one of the
+          // type.
+
+          const componentName = source[def.schema.discriminator.propertyName]
+
+          const { mapping } = def.schema.discriminator
+
+          const type = types.find((type) => {
+            if (!mapping[componentName]) {
+              return false
+            }
+            return mapping[componentName].includes(type.name)
+          })
+          if (type) return type
+          return null
+        }
+
         const properties = Object.keys(source)
           // Remove custom _openAPIToGraphQL property used to pass data
           .filter((property) => property !== '_openAPIToGraphQL')

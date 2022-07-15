@@ -9,7 +9,7 @@ import { graphql } from 'graphql'
 import { afterAll, beforeAll, expect, test } from '@jest/globals'
 
 import * as openAPIToGraphQL from '../src/index'
-import { startServer, stopServer } from './oneof_type_union_server'
+import { startServer, stopServer } from './discriminator_union_server'
 
 const oas = require('./fixtures/oneof_type_union.json')
 const PORT = 3004
@@ -38,7 +38,7 @@ afterAll(() => {
   return stopServer()
 })
 
-test.skip('Querying a type union', () => {
+test('Querying a type union that uses a discriminator type', () => {
   const query = `query {
     shapes {
       __typename
@@ -49,10 +49,6 @@ test.skip('Querying a type union', () => {
       ... on RoundShapeOptions {
         radius
       }
-      # ... on RectangleShapeOptions {
-      #   height
-      #   width
-      # }
       ... on DotShapeOptions {
         radius
         x
@@ -73,11 +69,6 @@ test.skip('Querying a type union', () => {
             __typename: 'RoundShapeOptions',
             radius: 30
           },
-          // {
-          //   __typename: 'RectangleShapeOptions',
-          //   height: 30,
-          //   width: 40
-          // },
           {
             __typename: 'DotShapeOptions',
             radius: 50,
@@ -90,36 +81,36 @@ test.skip('Querying a type union', () => {
   })
 })
 
-test.skip('Posting a type union', () => {
-  // Supposedly this is the best we can do with GraphQL mutations and type
-  // unions?
-  //
-  // See https://github.com/graphql/graphql-spec/issues/488
-  const query = `mutation {
-    createShape (shapeOptionsPostInput: {
-      type: "square"
-      width: 50
-      height: 50
-    }) { 
-      __typename
-      ... on SquareShapeOptions {
-        height
-        width
-      }
-      ... on RoundShapeOptions {
-        radius
-      }
-    }
-  }`
-  return graphql(createdSchema, query).then((result) => {
-    expect(result).toEqual({
-      data: {
-        createShape: {
-          __typename: 'SquareShapeOptions',
-          height: 50,
-          width: 50
-        }
-      }
-    })
-  })
-})
+// test('Posting a type union', () => {
+//   // Supposedly this is the best we can do with GraphQL mutations and type
+//   // unions?
+//   //
+//   // See https://github.com/graphql/graphql-spec/issues/488
+//   const query = `mutation {
+//     createShape (shapeOptionsPostInput: {
+//       type: "square"
+//       width: 50
+//       height: 50
+//     }) {
+//       __typename
+//       ... on SquareShapeOptions {
+//         height
+//         width
+//       }
+//       ... on RoundShapeOptions {
+//         radius
+//       }
+//     }
+//   }`
+//   return graphql(createdSchema, query).then((result) => {
+//     expect(result).toEqual({
+//       data: {
+//         createShape: {
+//           __typename: 'SquareShapeOptions',
+//           height: 50,
+//           width: 50
+//         }
+//       }
+//     })
+//   })
+// })

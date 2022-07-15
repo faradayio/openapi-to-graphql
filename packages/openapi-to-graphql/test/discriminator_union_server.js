@@ -29,11 +29,6 @@ function startServer(PORT) {
         radius: 30
       },
       {
-        type: 'rectangle',
-        height: 30,
-        width: 40
-      },
-      {
         type: 'dot',
         radius: 50,
         x: 1,
