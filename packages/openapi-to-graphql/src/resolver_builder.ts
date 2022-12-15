@@ -388,30 +388,27 @@ function inferLinkArguments<TSource, TContext, TArgs>({
   }
 }
 
-function getIgnoredJsonKeys(
+// recursively get all keys that are json type
+function findAllJsonKeyNames(
   operation: Operation['responseDefinition']
 ): string[] {
-  let targetJsonKeyNames = []
-
   const subdefs = operation.subDefinitions
+  let keys = []
 
   if (operation.targetGraphQLType === 'list') {
-    targetJsonKeyNames = targetJsonKeyNames.concat(
-      getIgnoredJsonKeys(subdefs as any)
-    )
+    keys = keys.concat(findAllJsonKeyNames(subdefs as any))
   } else {
-    Object.keys(subdefs).forEach((k) => {
-      if (subdefs[k].targetGraphQLType === 'json') {
-        targetJsonKeyNames.push(k)
-      } else if (subdefs[k].subDefinitions !== undefined) {
-        targetJsonKeyNames = targetJsonKeyNames.concat(
-          getIgnoredJsonKeys(subdefs[k])
-        )
+    for (const k in subdefs) {
+      const subdef = subdefs[k]
+      if (subdef.targetGraphQLType === 'json') {
+        keys.push(k)
+      } else if (subdef.subDefinitions !== undefined) {
+        keys = keys.concat(findAllJsonKeyNames(subdef))
       }
-    })
+    }
   }
 
-  return targetJsonKeyNames
+  return keys
 }
 
 /**
@@ -893,7 +890,7 @@ export function getResolver<TSource, TContext, TArgs>({
 
             // is the schema type here JSON? don't camelcase
             // Deal with the fact that the server might send unsanitized data
-            const ignoredJsonFields = getIgnoredJsonKeys(
+            const ignoredJsonFields = findAllJsonKeyNames(
               operation.responseDefinition
             )
             let saneData = Oas3Tools.sanitizeObjectKeys(
