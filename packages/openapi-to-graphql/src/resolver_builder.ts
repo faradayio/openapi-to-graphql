@@ -395,14 +395,21 @@ function getIgnoredJsonKeys(
 
   const subdefs = operation.subDefinitions
 
-  Object.keys(subdefs).forEach((k) => {
-    if (subdefs[k].targetGraphQLType === 'json') targetJsonKeyNames.push(k)
-    else if (subdefs[k].subDefinitions !== undefined) {
-      targetJsonKeyNames = targetJsonKeyNames.concat(
-        getIgnoredJsonKeys(subdefs[k])
-      )
-    }
-  })
+  if (operation.targetGraphQLType === 'list') {
+    targetJsonKeyNames = targetJsonKeyNames.concat(
+      getIgnoredJsonKeys(subdefs as any)
+    )
+  } else {
+    Object.keys(subdefs).forEach((k) => {
+      if (subdefs[k].targetGraphQLType === 'json') {
+        targetJsonKeyNames.push(k)
+      } else if (subdefs[k].subDefinitions !== undefined) {
+        targetJsonKeyNames = targetJsonKeyNames.concat(
+          getIgnoredJsonKeys(subdefs[k])
+        )
+      }
+    })
+  }
 
   return targetJsonKeyNames
 }
@@ -435,9 +442,6 @@ export function getResolver<TSource, TContext, TArgs>({
   const title = operation.oas.info.title
   const path = operation.path
   const method = operation.method
-
-  // FIXME: this only gets the top level keys, we could have more nested keys in objects that are json
-  const ignoredJsonFields = getIgnoredJsonKeys(operation.responseDefinition)
 
   if (
     typeof customResolvers === 'object' &&
@@ -889,6 +893,9 @@ export function getResolver<TSource, TContext, TArgs>({
 
             // is the schema type here JSON? don't camelcase
             // Deal with the fact that the server might send unsanitized data
+            const ignoredJsonFields = getIgnoredJsonKeys(
+              operation.responseDefinition
+            )
             let saneData = Oas3Tools.sanitizeObjectKeys(
               responseBody,
               !data.options.simpleNames
