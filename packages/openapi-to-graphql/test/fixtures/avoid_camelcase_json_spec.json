@@ -1,0 +1,67 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "test-json-camelcase-issue",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:{port}/{basePath}",
+      "variables": {
+        "port": {
+          "default": "8080"
+        },
+        "basePath": {
+          "default": "api"
+        }
+      }
+    }
+  ],
+  "paths": {
+    "/test_json": {
+      "get": {
+        "description": "An endpoint that returns an object with a field that is JSON",
+        "responses": {
+          "200": {
+            "description": "Success response for test-json",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Response": {
+        "type": "object",
+        "properties": {
+          "payload_test": {
+            "type": "string"
+          },
+          "age_test": {
+            "type": "number"
+          },
+          "valid_test": {
+            "type": "boolean"
+          },
+          "payload": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "column_name": { "type": "string" },
+                "format": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
