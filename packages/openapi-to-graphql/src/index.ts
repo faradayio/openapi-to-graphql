@@ -53,6 +53,8 @@ import {
   GraphQLObjectType,
   GraphQLOutputType,
   GraphQLFieldConfig,
+  printSchema,
+  printType
 } from 'graphql'
 
 // Imports:
@@ -481,7 +483,7 @@ function addQueryFields<TSource, TContext, TArgs>({
     singularNames,
     baseUrl,
     requestOptions,
-      fileUploadOptions,
+    fileUploadOptions,
     connectOptions,
     fetch
   } = options
@@ -660,7 +662,7 @@ function addMutationFields<TSource, TContext, TArgs>({
     singularNames,
     baseUrl,
     requestOptions,
-      fileUploadOptions,
+    fileUploadOptions,
     connectOptions,
     fetch
   } = options
@@ -810,7 +812,8 @@ function addSubscriptionFields<TSource, TContext, TArgs>({
   options: InternalOptions<TSource, TContext, TArgs>
   data: PreprocessingData<TSource, TContext, TArgs>
 }) {
-  const { baseUrl, requestOptions, connectOptions, fetch, fileUploadOptions } = options
+  const { baseUrl, requestOptions, connectOptions, fetch, fileUploadOptions } =
+    options
 
   const field = getFieldForOperation(
     operation,

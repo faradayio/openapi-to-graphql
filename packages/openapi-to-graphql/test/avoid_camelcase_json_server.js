@@ -27,6 +27,12 @@ function startServer(PORT) {
           column_name: 'cat_owner',
           format: 'none'
         }
+      },
+      nested_additional: {
+        deeply_nested: {
+          column_name: 'cat_owner',
+          format: 'none'
+        }
       }
     })
   })

@@ -217,6 +217,7 @@ export function getGraphQLType<TSource, TContext, TArgs>({
       return def.graphQLType
 
     case TargetGraphQLType.json:
+      // console.log('WILL BECOME JSON', def)
       def.graphQLType = CleanGraphQLJSON
       return def.graphQLType
 
@@ -1289,6 +1290,9 @@ export function getArgs<TSource, TContext, TArgs>({
         ? Oas3Tools.CaseStyle.camelCase
         : Oas3Tools.CaseStyle.simple
     )
+
+    // these are args, dont care
+    console.log({ saneName })
 
     // Parameters are not required when a default exists:
     let hasDefault = false

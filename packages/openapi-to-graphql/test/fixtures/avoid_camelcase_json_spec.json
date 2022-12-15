@@ -59,6 +59,21 @@
                 "format": { "type": "string" }
               }
             }
+          },
+          "nested_additional": {
+            "type": "object",
+            "properties": {
+              "deeply_nested": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "column_name": { "type": "string" },
+                    "format": { "type": "string" }
+                  }
+                }
+              }
+            }
           }
         }
       }

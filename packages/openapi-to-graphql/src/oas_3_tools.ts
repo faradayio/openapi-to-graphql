@@ -461,7 +461,8 @@ function buildUrl(server: ServerObject): string {
  */
 export function sanitizeObjectKeys(
   obj: any, // obj does not necessarily need to be an object
-  caseStyle: CaseStyle = CaseStyle.camelCase
+  caseStyle: CaseStyle = CaseStyle.camelCase,
+  ignoredKeys: string[] = []
 ): any {
   const cleanKeys = (obj: any): any => {
     // Case: no (response) data
@@ -477,10 +478,19 @@ export function sanitizeObjectKeys(
       const res: object = {}
 
       for (const key in obj) {
+        console.log({ key, ignoredKeys })
         const saneKey = sanitize(key, caseStyle)
 
-        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        // ignoredKeys is snake case, so check that it has key, not saneKey
+        if (
+          Object.prototype.hasOwnProperty.call(obj, key) &&
+          !ignoredKeys.includes(key)
+        ) {
           res[saneKey] = cleanKeys(obj[key])
+        }
+        // don't camel case keys in a json obj, because those could be user inputted
+        else if (ignoredKeys.includes(key)) {
+          res[saneKey] = obj[key]
         }
       }
 
@@ -776,8 +786,12 @@ function GetOneOfTargetGraphQLType<TSource, TContext, TArgs>(
   // Target GraphQL types of all the member schemas
   const memberTargetTypes: TargetGraphQLType[] = []
   schema.oneOf.forEach((memberSchema) => {
-    const collapsedMemberSchema = resolveAllOf(memberSchema, {}, data, oas);
-    const memberTargetType = getSchemaTargetGraphQLType(collapsedMemberSchema, data, oas)
+    const collapsedMemberSchema = resolveAllOf(memberSchema, {}, data, oas)
+    const memberTargetType = getSchemaTargetGraphQLType(
+      collapsedMemberSchema,
+      data,
+      oas
+    )
 
     if (memberTargetType !== null) {
       memberTargetTypes.push(memberTargetType)
@@ -828,9 +842,7 @@ function GetOneOfTargetGraphQLType<TSource, TContext, TArgs>(
  * components as well as an updated list of paths where the common prefix was
  * removed.
  */
-function extractBasePath(
-  paths: string[]
-): {
+function extractBasePath(paths: string[]): {
   basePath: string
   updatedPaths: string[]
 } {
@@ -970,7 +982,7 @@ export function getRequestSchemaAndNames(
           payloadContentType === 'application/json' ||
           payloadContentType === '*/*' ||
           payloadContentType === 'application/x-www-form-urlencoded' ||
-            payloadContentType === 'multipart/form-data'
+          payloadContentType === 'multipart/form-data'
         ) {
           // Name extracted from a reference, if applicable
           let fromRef: string
@@ -1368,9 +1380,9 @@ export function getServers(
  * Returns a map of security scheme definitions, identified by keys. Resolves
  * possible references.
  */
-export function getSecuritySchemes(
-  oas: Oas3
-): { [schemeKey: string]: SecuritySchemeObject } {
+export function getSecuritySchemes(oas: Oas3): {
+  [schemeKey: string]: SecuritySchemeObject
+} {
   // Collect all security schemes:
   const securitySchemes: { [schemeKey: string]: SecuritySchemeObject } = {}
   if (
@@ -1461,6 +1473,8 @@ export function isSanitized(str: string): boolean {
  * First sanitizes given string and then also camelCases it.
  */
 export function sanitize(str: string, caseStyle: CaseStyle): string {
+  // console.log('sanitize', str, caseStyle)
+
   /**
    * Used in conjunction to simpleNames, which only removes illegal
    * characters and preserves casing

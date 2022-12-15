@@ -349,10 +349,16 @@ function inferLinkArguments<TSource, TContext, TArgs>({
   resolveData,
   source,
   args
-}: inferLinkArgumentsParam<TSource, TContext, TArgs>)  {
+}: inferLinkArgumentsParam<TSource, TContext, TArgs>) {
   if (typeof value === 'object') {
     return Object.entries(value).reduce((acc, [key, value]) => {
-      acc[key] = inferLinkArguments({paramName, value, resolveData, source, args})
+      acc[key] = inferLinkArguments({
+        paramName,
+        value,
+        resolveData,
+        source,
+        args
+      })
       return acc
     }, {})
   }
@@ -361,16 +367,44 @@ function inferLinkArguments<TSource, TContext, TArgs>({
     return value
   } else if (value.search(/{|}/) === -1) {
     return isRuntimeExpression(value)
-        ? resolveRuntimeExpression(paramName, value, resolveData, source, args)
-        : value
+      ? resolveRuntimeExpression(paramName, value, resolveData, source, args)
+      : value
   } else {
     // Replace link parameters with appropriate values
     const linkParams = value.match(/{([^}]*)}/g)
     linkParams.forEach((linkParam) => {
-      value = value.replace(linkParam, resolveRuntimeExpression(paramName, linkParam.substring(1, linkParam.length - 1), resolveData, source, args))
+      value = value.replace(
+        linkParam,
+        resolveRuntimeExpression(
+          paramName,
+          linkParam.substring(1, linkParam.length - 1),
+          resolveData,
+          source,
+          args
+        )
+      )
     })
     return value
   }
+}
+
+function getIgnoredJsonKeys(
+  operation: Operation['responseDefinition']
+): string[] {
+  let targetJsonKeyNames = []
+
+  const subdefs = operation.subDefinitions
+
+  Object.keys(subdefs).forEach((k) => {
+    if (subdefs[k].targetGraphQLType === 'json') targetJsonKeyNames.push(k)
+    else if (subdefs[k].subDefinitions !== undefined) {
+      targetJsonKeyNames = targetJsonKeyNames.concat(
+        getIgnoredJsonKeys(subdefs[k])
+      )
+    }
+  })
+
+  return targetJsonKeyNames
 }
 
 /**
@@ -401,6 +435,9 @@ export function getResolver<TSource, TContext, TArgs>({
   const title = operation.oas.info.title
   const path = operation.path
   const method = operation.method
+
+  // FIXME: this only gets the top level keys, we could have more nested keys in objects that are json
+  const ignoredJsonFields = getIgnoredJsonKeys(operation.responseDefinition)
 
   if (
     typeof customResolvers === 'object' &&
@@ -493,7 +530,13 @@ export function getResolver<TSource, TContext, TArgs>({
 
       let value = argsFromLink[paramName]
 
-      args[saneParamName] = inferLinkArguments({paramName, value, resolveData, source, args})
+      args[saneParamName] = inferLinkArguments({
+        paramName,
+        value,
+        resolveData,
+        source,
+        args
+      })
     }
 
     // Stored used parameters to future requests:
@@ -575,6 +618,7 @@ export function getResolver<TSource, TContext, TArgs>({
      */
     let form: FormData
     resolveData.usedPayload = undefined
+
     if (typeof payloadName === 'string') {
       // The option genericPayloadArgName will change the payload name to "requestBody"
       const sanePayloadName = data.options.genericPayloadArgName
@@ -595,51 +639,64 @@ export function getResolver<TSource, TContext, TArgs>({
       } else if (operation.payloadContentType === 'multipart/form-data') {
         form = new FormData(fileUploadOptions)
 
-        const formFieldsPayloadEntries = Object.entries(args[sanePayloadName]);
+        const formFieldsPayloadEntries = Object.entries(args[sanePayloadName])
 
-        (await Promise.all(formFieldsPayloadEntries.map(([_, v]) => v)))
-            .forEach((fieldValue, idx) => {
-              const fieldName = formFieldsPayloadEntries[idx][0]
+        ;(
+          await Promise.all(formFieldsPayloadEntries.map(([_, v]) => v))
+        ).forEach((fieldValue, idx) => {
+          const fieldName = formFieldsPayloadEntries[idx][0]
 
-              if (typeof fieldValue === 'object' && Boolean((fieldValue as Partial<FileUpload>).createReadStream)) {
-                const uploadingFile = fieldValue as FileUpload
-                const originalFileStream = uploadingFile.createReadStream()
-                const filePassThrough = new stream.PassThrough()
+          if (
+            typeof fieldValue === 'object' &&
+            Boolean((fieldValue as Partial<FileUpload>).createReadStream)
+          ) {
+            const uploadingFile = fieldValue as FileUpload
+            const originalFileStream = uploadingFile.createReadStream()
+            const filePassThrough = new stream.PassThrough()
 
-                originalFileStream.on('readable', function () {
-                  let data
+            originalFileStream.on('readable', function () {
+              let data
 
-                  while (data = this.read()) {
-                    const canReadNext = filePassThrough.write(data)
-                    if (!canReadNext) {
-                      this.pause()
-                      filePassThrough.once('drain', () => this.resume())
-                    }
-                  }
-                })
-
-                originalFileStream.on('error', () => {
-                  uploadLog('Encountered an error while uploading the file %s', uploadingFile.filename)
-                })
-
-                originalFileStream.on('end', () => {
-                  uploadLog('Upload for received file %s completed', uploadingFile.filename)
-                  filePassThrough.end()
-                })
-
-                uploadLog('Queuing upload for received file %s', uploadingFile.filename)
-
-                form.append(fieldName, filePassThrough, {
-                  filename: uploadingFile.filename,
-                  contentType: uploadingFile.mimetype
-                })
-              } else if (typeof fieldValue !== 'string') {
-                // Handle all other primitives that aren't strings as strings the way the web server would expect it
-                form.append(fieldName, JSON.stringify(fieldValue))
-              } else {
-                form.append(fieldName, fieldValue)
+              while ((data = this.read())) {
+                const canReadNext = filePassThrough.write(data)
+                if (!canReadNext) {
+                  this.pause()
+                  filePassThrough.once('drain', () => this.resume())
+                }
               }
             })
+
+            originalFileStream.on('error', () => {
+              uploadLog(
+                'Encountered an error while uploading the file %s',
+                uploadingFile.filename
+              )
+            })
+
+            originalFileStream.on('end', () => {
+              uploadLog(
+                'Upload for received file %s completed',
+                uploadingFile.filename
+              )
+              filePassThrough.end()
+            })
+
+            uploadLog(
+              'Queuing upload for received file %s',
+              uploadingFile.filename
+            )
+
+            form.append(fieldName, filePassThrough, {
+              filename: uploadingFile.filename,
+              contentType: uploadingFile.mimetype
+            })
+          } else if (typeof fieldValue !== 'string') {
+            // Handle all other primitives that aren't strings as strings the way the web server would expect it
+            form.append(fieldName, JSON.stringify(fieldValue))
+          } else {
+            form.append(fieldName, fieldValue)
+          }
+        })
 
         rawPayload = form
       } else {
@@ -772,7 +829,10 @@ export function getResolver<TSource, TContext, TArgs>({
     } else {
       httpLog(`${response.status} - ${Oas3Tools.trim(body, 100)}`)
 
-      if (response.headers.get('content-type') && operation.responseContentType) {
+      if (
+        response.headers.get('content-type') &&
+        operation.responseContentType
+      ) {
         /**
          * Throw warning if the non-application/json content does not
          * match the OAS.
@@ -827,12 +887,14 @@ export function getResolver<TSource, TContext, TArgs>({
               resolveData.responseHeaders[key] = val
             })
 
+            // is the schema type here JSON? don't camelcase
             // Deal with the fact that the server might send unsanitized data
             let saneData = Oas3Tools.sanitizeObjectKeys(
               responseBody,
               !data.options.simpleNames
                 ? Oas3Tools.CaseStyle.camelCase
-                : Oas3Tools.CaseStyle.simple
+                : Oas3Tools.CaseStyle.simple,
+              ignoredJsonFields
             )
 
             // Pass on _openAPIToGraphQL to subsequent resolvers
@@ -1211,7 +1273,9 @@ function resolveRuntimeExpression(
 
       // CASE: parameter in previous header parameter
     } else if (runtimeExpression.startsWith('$request.header')) {
-      return resolveData.usedRequestOptions.headers[runtimeExpression.split('header.')[1]]
+      return resolveData.usedRequestOptions.headers[
+        runtimeExpression.split('header.')[1]
+      ]
     }
   } else if (runtimeExpression.startsWith('$response.')) {
     /**
@@ -1371,18 +1435,28 @@ export function extractRequestDataFromArgs<TSource, TContext, TArgs>(
         // Query parameters
         case 'query':
           // setting param style as form assumes explode is true by default
-          if (param.style === 'form' && typeof args[saneParamName] === 'object') {
+          if (
+            param.style === 'form' &&
+            typeof args[saneParamName] === 'object'
+          ) {
             if (param.explode === false) {
-              qs[param.name] = Object.entries(args[saneParamName]).reduce((acc, val) => {
-                acc += val.join(',')
-                return acc
-              }, '')
+              qs[param.name] = Object.entries(args[saneParamName]).reduce(
+                (acc, val) => {
+                  acc += val.join(',')
+                  return acc
+                },
+                ''
+              )
             } else {
               Object.entries(args[saneParamName]).forEach(([key, value]) => {
                 qs[key] = value
               })
             }
-          } else if (Array.isArray(args[saneParamName]) && param.style === 'form' && param.explode !== false) {
+          } else if (
+            Array.isArray(args[saneParamName]) &&
+            param.style === 'form' &&
+            param.explode !== false
+          ) {
             qs[param.name] = args[saneParamName].join(',')
           } else {
             qs[param.name] = args[saneParamName]

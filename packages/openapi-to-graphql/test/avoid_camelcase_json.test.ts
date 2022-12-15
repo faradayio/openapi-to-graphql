@@ -34,7 +34,7 @@ afterAll(() => {
 })
 
 test('does not camelcase keys in a json graphql type', () => {
-  console.log(printSchema(createdSchema))
+  // console.log(printSchema(createdSchema))
 
   const query = `{
     response  {
@@ -42,8 +42,15 @@ test('does not camelcase keys in a json graphql type', () => {
       ageTest
       validTest
 
-      # this is a json type
+      # should be json type. Anything inside should not be camelcased
       payload  
+
+      # normal object with known fields
+      nestedAdditional {
+
+        # should be json type. Anything inside should not be camelcased
+        deeplyNested
+      }
     }
   }`
 
@@ -57,6 +64,12 @@ test('does not camelcase keys in a json graphql type', () => {
           validTest: true,
           payload: {
             user_input_should_be_snake_case: {
+              column_name: 'cat_owner',
+              format: 'none'
+            }
+          },
+          nestedAdditional: {
+            deeplyNested: {
               column_name: 'cat_owner',
               format: 'none'
             }
