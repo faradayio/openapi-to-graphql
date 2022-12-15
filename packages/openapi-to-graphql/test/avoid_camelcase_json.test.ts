@@ -79,3 +79,52 @@ test('does not camelcase keys in a json graphql type', () => {
     })
   })
 })
+
+test('does not camelcase keys in a json graphql type within arrays', () => {
+  // console.log(printSchema(createdSchema))
+
+  const query = `{
+    testJsonList  {
+      payloadTest
+      ageTest
+      validTest
+
+      # should be json type. Anything inside should not be camelcased
+      payload  
+
+      # normal object with known fields
+      nestedAdditional {
+
+        # should be json type. Anything inside should not be camelcased
+        deeplyNested
+      }
+    }
+  }`
+
+  return graphql(createdSchema, query, null, {}).then((result) => {
+    // console.log('RESPONSE', JSON.stringify(result, null, 2))
+    expect(result).toEqual({
+      data: {
+        testJsonList: [
+          {
+            payloadTest: 'test',
+            ageTest: 20,
+            validTest: true,
+            payload: {
+              user_input_should_be_snake_case: {
+                column_name: 'cat_owner',
+                format: 'none'
+              }
+            },
+            nestedAdditional: {
+              deeplyNested: {
+                column_name: 'cat_owner',
+                format: 'none'
+              }
+            }
+          }
+        ]
+      }
+    })
+  })
+})

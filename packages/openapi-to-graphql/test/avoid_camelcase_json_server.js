@@ -17,24 +17,30 @@ function startServer(PORT) {
   const bodyParser = require('body-parser')
   app.use(bodyParser.json())
 
-  app.get('/api/test_json', (req, res) => {
-    res.send({
-      payload_test: 'test',
-      age_test: 20,
-      valid_test: true,
-      payload: {
-        user_input_should_be_snake_case: {
-          column_name: 'cat_owner',
-          format: 'none'
-        }
-      },
-      nested_additional: {
-        deeply_nested: {
-          column_name: 'cat_owner',
-          format: 'none'
-        }
+  const testObj = {
+    payload_test: 'test',
+    age_test: 20,
+    valid_test: true,
+    payload: {
+      user_input_should_be_snake_case: {
+        column_name: 'cat_owner',
+        format: 'none'
       }
-    })
+    },
+    nested_additional: {
+      deeply_nested: {
+        column_name: 'cat_owner',
+        format: 'none'
+      }
+    }
+  }
+
+  app.get('/api/test_json', (req, res) => {
+    res.send(testObj)
+  })
+
+  app.get('/api/test_json_list', (req, res) => {
+    res.send([testObj])
   })
 
   return new Promise((resolve) => {

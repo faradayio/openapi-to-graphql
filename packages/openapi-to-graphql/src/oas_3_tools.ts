@@ -478,7 +478,6 @@ export function sanitizeObjectKeys(
       const res: object = {}
 
       for (const key in obj) {
-        console.log({ key, ignoredKeys })
         const saneKey = sanitize(key, caseStyle)
 
         // ignoredKeys is snake case, so check that it has key, not saneKey
@@ -1473,8 +1472,6 @@ export function isSanitized(str: string): boolean {
  * First sanitizes given string and then also camelCases it.
  */
 export function sanitize(str: string, caseStyle: CaseStyle): string {
-  // console.log('sanitize', str, caseStyle)
-
   /**
    * Used in conjunction to simpleNames, which only removes illegal
    * characters and preserves casing
