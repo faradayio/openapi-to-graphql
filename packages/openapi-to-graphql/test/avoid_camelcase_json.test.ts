@@ -38,20 +38,31 @@ test('does not camelcase keys in a json graphql type', () => {
 
   const query = `{
     response  {
+      payloadTest
+      ageTest
+      validTest
+
+      # this is a json type
       payload  
     }
   }`
 
   return graphql(createdSchema, query, null, {}).then((result) => {
-    console.log('RESPONSE', JSON.stringify(result, null, 2))
-    // expect(result).toEqual({
-    //   data: {
-    //     payload: {
-    //       column_name: 'column_name'
-    //     }
-    //   }
-    // })
-
-    expect(false).toBeTruthy()
+    // console.log('RESPONSE', JSON.stringify(result, null, 2))
+    expect(result).toEqual({
+      data: {
+        response: {
+          payloadTest: 'test',
+          ageTest: 20,
+          validTest: true,
+          payload: {
+            user_input_should_be_snake_case: {
+              column_name: 'cat_owner',
+              format: 'none'
+            }
+          }
+        }
+      }
+    })
   })
 })

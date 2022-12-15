@@ -19,6 +19,9 @@ function startServer(PORT) {
 
   app.get('/api/test_json', (req, res) => {
     res.send({
+      payload_test: 'test',
+      age_test: 20,
+      valid_test: true,
       payload: {
         user_input_should_be_snake_case: {
           column_name: 'cat_owner',
